@@ -137,7 +137,7 @@ function updateReels() {
 function drawTitle() {
 
   terminalText(
-    "ORACLE_OS v1.0",
+    "FORTUNE-SLOTS_OS v1.0",
     width / 2,
     100,
     52
@@ -148,7 +148,7 @@ function drawTitle() {
   fill(0, crtBrightness, 0);
 
   text(
-    "> DIGITAL PROPHECY ENGINE ONLINE",
+    "> DIGITAL SLOT MACHINE ENGINE ONLINE",
     width / 2,
     145
   );
@@ -268,7 +268,7 @@ function drawFortune() {
   textSize(16);
 
   text(
-    "> PRESS BUTTON FOR NEW PROPHECY",
+    "> PRESS BUTTON TO SPIN AGAIN",
     width / 2,
     height - 80
   );
