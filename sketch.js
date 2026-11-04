@@ -127,7 +127,7 @@ function updateReels() {
 
 function drawTitle() {
 
-  fill(255, 215, 0);
+  fill(0, 255, 85);
 
   textSize(52);
 
@@ -145,7 +145,7 @@ function drawReel(x, word) {
   stroke(255, 215, 0);
   strokeWeight(4);
 
-  fill(35);
+  fill(0);
 
   rect(
     x,
