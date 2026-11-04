@@ -1,5 +1,6 @@
 // ====================================
 // ALGORITHM OF FATE
+// CRT TERMINAL EDITION
 // ====================================
 
 const places = [
@@ -59,6 +60,10 @@ let connectButton;
 let lastPressTime = 0;
 const debounceTime = 300;
 
+// CRT EFFECT
+
+let crtBrightness = 255;
+
 // ====================================
 
 function setup() {
@@ -67,6 +72,8 @@ function setup() {
 
   textAlign(CENTER, CENTER);
   rectMode(CENTER);
+
+  textFont("Courier New");
 
   resetMachine();
 
@@ -81,7 +88,9 @@ function setup() {
 
 function draw() {
 
-  background(15);
+  background(0);
+
+  crtBrightness = random(235, 255);
 
   updateReels();
 
@@ -127,14 +136,21 @@ function updateReels() {
 
 function drawTitle() {
 
-  fill(0, 255, 85);
+  terminalText(
+    "ORACLE_OS v1.0",
+    width / 2,
+    100,
+    52
+  );
 
-  textSize(52);
+  textSize(18);
+
+  fill(0, crtBrightness, 0);
 
   text(
-    "THE ALGORITHM OF FATE",
+    "> DIGITAL PROPHECY ENGINE ONLINE",
     width / 2,
-    100
+    145
   );
 }
 
@@ -142,7 +158,7 @@ function drawTitle() {
 
 function drawReel(x, word) {
 
-  stroke(255, 215, 0);
+  stroke(0, crtBrightness, 0);
   strokeWeight(4);
 
   fill(0);
@@ -157,7 +173,7 @@ function drawReel(x, word) {
 
   noStroke();
 
-  fill(255);
+  fill(0, crtBrightness, 0);
 
   textSize(30);
 
@@ -172,14 +188,14 @@ function drawReel(x, word) {
 
 function drawStatus() {
 
-  fill(255);
+  fill(0, crtBrightness, 0);
 
   textSize(22);
 
   if (!serialConnected) {
 
     text(
-      "Click 'Connect Microbit'",
+      "> CONNECT MICROBIT TO ORACLE",
       width / 2,
       height - 100
     );
@@ -190,7 +206,7 @@ function drawStatus() {
   if (state === 0) {
 
     text(
-      "Press the button to begin",
+      "> INITIALIZE PROPHECY",
       width / 2,
       height - 100
     );
@@ -199,7 +215,7 @@ function drawStatus() {
   if (state === 1) {
 
     text(
-      "Choose the first word",
+      "> SELECTING LOCATION...",
       width / 2,
       height - 100
     );
@@ -208,7 +224,7 @@ function drawStatus() {
   if (state === 2) {
 
     text(
-      "Choose the second word",
+      "> SELECTING EVENT...",
       width / 2,
       height - 100
     );
@@ -217,7 +233,7 @@ function drawStatus() {
   if (state === 3) {
 
     text(
-      "Choose the final word",
+      "> SELECTING OUTCOME...",
       width / 2,
       height - 100
     );
@@ -228,7 +244,7 @@ function drawStatus() {
 
 function drawFortune() {
 
-  fill(255);
+  fill(0, crtBrightness, 0);
 
   textSize(30);
 
@@ -252,7 +268,7 @@ function drawFortune() {
   textSize(16);
 
   text(
-    "Press button for a new fortune",
+    "> PRESS BUTTON FOR NEW PROPHECY",
     width / 2,
     height - 80
   );
@@ -294,7 +310,6 @@ function advanceMachine() {
     resetMachine();
 
     state = 1;
-
   }
 }
 
@@ -328,6 +343,7 @@ async function connectSerial() {
     startReading();
 
   }
+
   catch (err) {
 
     console.error(err);
@@ -381,13 +397,12 @@ async function startReading() {
           if (line === "PRESS") {
 
             advanceMachine();
-
           }
         }
       }
     }
-
   }
+
   catch (err) {
 
     console.error(
@@ -395,6 +410,22 @@ async function startReading() {
       err
     );
   }
+}
+
+// ====================================
+
+function terminalText(str, x, y, size) {
+
+  textSize(size);
+
+  fill(0, 60, 0);
+  text(str, x + 4, y + 4);
+
+  fill(0, 120, 0);
+  text(str, x + 2, y + 2);
+
+  fill(0, crtBrightness, 0);
+  text(str, x, y);
 }
 
 // ====================================
