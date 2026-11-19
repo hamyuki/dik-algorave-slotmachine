@@ -1,13 +1,13 @@
 // Array of words that will be randmoly selected and are sorted into five reels for the fortune. whitch is location, eventm feeling, turening point, and outcome.
 const wordChoices = [ 
-  "Forest", "Ocean", "Apartment", "Garage", "Garden", "Park", "Corridor", "River", "Mall", //locations and scenes
-  "Love", "Loss", "Hope", "Fear", "Death", "Conflict", "Change", "Silence", // emotions and events.
+  "Forest", "Ocean", "Apartment", "Garage", "Garden", "Park", "Corridor", "River", "Mall", "Cafe", "Vacation", "Bhutan", "Quebec", "Småland", "Greece", "Södertörn", "Train", "Cellar", "Basement",  //locations and scenes
+  "Love", "Loss", "Hope", "Fear", "Death", "Conflict", "Change", "Silence" , // emotions and events.
   "Misfortune", "Freedom", "Riches", "Growth", "Destiny", "Balance", "Fortune", "Understanding", // possible outcomes.
-  "Heart", "Memory", "Dream", "Home", "Tragedy", "Storm", "Horizon", // personal and symbolic ideas.
-  "Joy", "Grief", "Longing", "Forgiveness", "Surprise", "Courage", "Acceptance", // Add feelings and responses.
-  "Healing", "Connection", "Clarity", "Peace", "Renewal", "Trust", // positive themes.
+  "Heart", "Memory", "Dream", "Home", "Tragedy", "Storm", "Horizon", "Struggle", // personal and symbolic ideas.
+  "Joy", "Grief", "Longing", "Forgiveness", "Surprise", "Courage", "Acceptance", "Pain", "Suffering", // Add feelings and responses.
+  "Healing", "Connection", "Clarity", "Peace", "Renewal", "Trust", "Puppy", "Kitten", // positive themes.
   "Moon", "Anomaly", "Encounter", "Soulmate", "Escape", "Knowledge", "Rebirth", "Transformation", // unusual themes.
-  "Sacrifice", "Reunion", "Immortality", "Exile", "Accident", "Legacy", "Redemption", // word pool.
+  "Sacrifice", "Reunion", "Immortality", "Exile", "Accident", "Redemption", "Cat", "Dog", "Job", "Nothing", "Despair", "Help", "President", "Company", "Work", // word pool.
 ]; 
 // Reel count and the stages that control when each reel stops.
 const REEL_COUNT = 5; //deffine the number of reels in the slot machine. 
