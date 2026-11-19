@@ -188,139 +188,215 @@ function spinReels(size) {  // size contins the demention of the reels and is us
     } else if (!shouldSpin) { // menas that uf the reel is not spinning and the speed is grater than 0.1 then the block executes 
 // != Not and reverses the boolean statemnt to the opposit. True to false. False to true 
 
-      reelSpeeds[index] = 0; // Remove  leftover speed values.
-      reelOffsets[index] *= 0.85; // Gently align the final word with the center.
-      if (reelOffsets[index] < 0.5) reelOffsets[index] = 0; // Snap away a barely visible offset.
-    } // End the reel-settling branch.
-  } // End the reel loop.
+      reelSpeeds[index] = 0; // Remove  leftover speed values. becasue js can hanle floats 
+      reelOffsets[index] *= 0.85; // retains the 85% of the offset and keeps it to the center
 
-  if (stage === FINAL_STAGE && fortunePending && reelSpeeds.every((speed) => speed === 0)) { // Wait until every reel is still.
+      if (reelOffsets[index] < 0.5) reelOffsets[index] = 0; // removes remaning offsets 
+      // ´WHy- because js language is bad at culculating floats and keeps caluculating them even when its not needed
+    } 
+  } 
+
+  if (stage === FINAL_STAGE && fortunePending && reelSpeeds.every((speed) => speed === 0)) { // Wait until every reel is still. Then waits untill fate is generated 
+    // every () array method that returns true only if every elements is true
     fortunePending = false; // Ensure this round requests a fortune only once.
-    generateFortune(); // Ask the local Ollama model for the result.
-  } // End the all-reels-stopped branch.
-} // End reel animation.
+    generateFortune(); // and if all the conditions is true then the AI will generate its fortune 
+  } 
+}
 
-// Pick starting words and clear state for a new spin.
-function resetMachine() { // Prepare the machine for a fresh round.
-  words = Array.from({ length: REEL_COUNT }, () => random(wordChoices)); // Pick each reel's starting word.
-  previousWords = Array.from({ length: REEL_COUNT }, () => random(wordChoices)); // Fill the row above each reel.
-  nextWords = Array.from({ length: REEL_COUNT }, () => random(wordChoices)); // Fill the row below each reel.
-  reelOffsets = Array(REEL_COUNT).fill(0); // Align all reel words at the center.
-  reelSpeeds = Array(REEL_COUNT).fill(0); // Start with every reel stopped.
-  fortune = ""; // Clear the last fortune.
-  explanation = ""; // Clear its explanation.
+// resets the mashine 
+function resetMachine() {
+  words = Array.from({ length: REEL_COUNT }, () => random(wordChoices)); // Creates an array from specified structure through Array.form()
+// length: REEL_COUNT derems how long array should be, while ()=> function that executes and randomizes the word choise 
+
+  previousWords = Array.from({ length: REEL_COUNT }, () => random(wordChoices)); // Fill the row above each reel and does the same thing as previus line.
+  nextWords = Array.from({ length: REEL_COUNT }, () => random(wordChoices)); // Fill the row below each reel and does same thing as before but for next word
+  reelOffsets = Array(REEL_COUNT).fill(0); // Align all reel words offet to 0 5 times
+  reelSpeeds = Array(REEL_COUNT).fill(0); // Same thing here but resets speed to 0 
+  fortune = ""; // Clear the previus fate
+  explanation = ""; // Clear the previous explanation 
   aiStatus = "PRESS THE MICROBIT TO SPIN"; // Show the ready message.
   stage = 0; // Return to the initial game stage.
   fortunePending = false; // Clear any request waiting for the reels.
-} // End the reset routine.
+} 
 
-// Turn all generated sounds on or off.
-function toggleMute() { // Change the sound setting from the button.
-  muted = !muted; // Flip the current mute state.
+// function to Turn all generated sounds on or off.
+function toggleMute() { 
+  muted = !muted; // Flips  the current mute state.
   muteButton.html(muted ? "Sound: Off" : "Sound: On"); // Update the button label.
-  if (!muted) unlockAudio(); // Resume audio when sound is turned back on.
-} // End the mute toggle.
+  if (!muted) unlockAudio(); // turns on the  audio when sound is turned back on.
+} 
 
-// Start or resume audio after a user action, as required by browsers.
-function unlockAudio() { // Set up audio after a click or micro:bit press.
-  if (!audioContext) { // Create the audio context only once.
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext; // Support standard and older browsers.
+// Start or resume audio after a user action,
+function unlockAudio() { 
+  if (!audioContext) { // stores the browsers audio invierment and checks if the variable is empty or undefined 
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext; //check´s if the web sound API is supported by the browser 
+  // window= global browsers envierment, Audiocontext= Standrat browsers interface, OR the webkitAudioContex aon older version of sound engine 
+
     if (!AudioContextClass) return; // Exit if this browser has no Web Audio support.
-    audioContext = new AudioContextClass(); // Create the shared audio context.
-  } // End audio-context creation.
-  if (audioContext.state === "suspended") audioContext.resume(); // Resume audio if browser playback was paused.
-} // End audio setup.
+    audioContext = new AudioContextClass(); // Create the shared audio context. with new audiocontextclass() object 
+  } 
+  if (audioContext.state === "suspended") audioContext.resume(); // audiocontext.state 
+} 
 
 // Play one short tone through the browser's audio system.
 function playTone(frequency, duration, type, volume) { // Create a tone with the requested sound settings.
   if (muted || !audioContext) return; // Skip sound while muted or before audio is enabled.
-
   const oscillator = audioContext.createOscillator(); // Generate the tone's waveform.
+// createOscillator() creates an oscillator node -  generates a repeating waveform sound 
+// Gain- controills the amplitude of an audio signal which desides the volue output 
   const gain = audioContext.createGain(); // Control the tone's volume.
   const now = audioContext.currentTime; // Use the current audio time for scheduling.
-
-  oscillator.type = type; // Choose the tone's timbre.
-  oscillator.frequency.setValueAtTime(frequency, now); // Set its pitch.
-  gain.gain.setValueAtTime(volume, now); // Set its starting volume.
+  oscillator.type = type; // Choose the tone's timbre / waveform.
+  oscillator.frequency.setValueAtTime(frequency, now); // Set its frequency in HZ.
+  gain.gain.setValueAtTime(volume, now); // Set its starting volume at certean time .
+// accesss the gain node and later on accesses the audioparameters inside the node, 
   gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Fade the tone out smoothly.
-  oscillator.connect(gain); // Send the tone through its volume control.
+// accesss the gain node and later on accesses the audioparameters inside the node,  later exponentialRampToValueAtTime() creates a exponential sound transition
+// 0.001 - the ramp cant reaches the zero because it will be muted and a small positive value is used for making the sound partically silent.
+  oscillator.connect(gain); // Send the tone through its volume control/ GainNode.
   gain.connect(audioContext.destination); // Route the sound to the speakers.
   oscillator.start(now); // Begin playing the tone.
   oscillator.stop(now + duration); // End it after the requested duration.
-} // End tone playback.
+} 
 
 // Tick as a word passes through a spinning reel.
-function playClickSound(reel) { // Play a short click for the reel that moved.
-  playTone([520, 600, 680, 760, 860][reel], 0.035, "square", 0.035); // Give each of the five reels a distinct pitch.
-} // End reel click sound.
+function playClickSound(reel) { 
+  playTone([520, 600, 680, 760, 860][reel], 0.035, "square", 0.035); //
+  //plays a tone of: Reel 1,	index: 0,	520 Hz. Reel 2,	index 1,	600 Hz. Reel 3	index 2, 	680 Hz. Reel 4	index 3	760 Hz, Reel 5	index 4,	860 Hz
+   // its a musical pattern that creats a notes 
+  // plays a square sound which is Sharp, electronic, arcade-like sound.
+  // 0.035= 0.035 sec
+  // second 0.035 = amplitude 
+
+} 
 
 // Give each reel a low tone when the player stops it.
-function playStopSound(reel) { // Play a low stopping tone.
-  playTone([220, 280, 340, 400, 460][reel], 0.12, "triangle", 0.08); // Match its pitch to the reel.
-} // End reel stop sound.
+function playStopSound(reel) { // Play a low stopping tone for each reel.
+  playTone([220, 280, 340, 400, 460][reel], 0.12, "triangle", 0.08 ); // Match its pitch to the reel.
+} //  Reel 1, index; 0, 220 hz.   Reel 2,  index;1, 280hz. Reel 3, index;2, 340hz. Reel 4,  index;3,  400hz. Reel 5,  index;4,  460hz.
+ // its a musical pattern that creats a notes  
+// triangle sound wave- Softer, mellow electronic sound.
+//  0.08 = amplitude 
+
 
 // Play a short rising chime when Ollama returns a fortune.
-function playResultSound() { // Celebrate a successful fortune response.
-  [523, 659, 784, 1047].forEach((frequency, index) => { // Step through four rising notes.
+function playResultSound() { // plays the rersult sound 
+  [523, 659, 784, 1047].forEach((frequency, index) => { // Step through four rising notes with this sett up
+  // 1 iteration- 523 hz. 2 Iteration  659hz. 3 Iteration 784 hz. 4 Iteration 1047hz.
+   // its a musical pattern that creats a notes 
+
     setTimeout(() => playTone(frequency, 0.18, "triangle", 0.055), index * 95); // Play each note in sequence.
-  }); // End the rising-note sequence.
-} // End result sound.
+    // setTimeout() delays the execution of the playTOne() function while calculating the delay for each note
+     // Note	            Calculation	              Delay
+     //523 Hz	              0 × 95	                 0 ms
+     //659 Hz	              1 × 95	                 95 ms
+     //784 Hz	              2 × 95	                 190 ms
+     //1047 Hz	            3 × 95	                 285 ms
+
+
+
+  }); 
+// triangle sound wave- Softer, mellow electronic sound.
+
+} 
 
 // Play a soft repeating suspense tune while the model writes the fortune.
-function startWaitingSound() { // Start the repeating tune for an Ollama request.
+function startWaitingSound() {
   stopWaitingSound(); // Clear any previous tune before starting another.
   const notes = [196, 233, 262, 233]; // Define a quiet four-note suspense pattern.
+// sound pattern of waiting on result 
+
   let noteIndex = 0; // Track which note plays next.
   const playNextNote = () => { // Play one note and move to the next.
+     // responsible for a one node and updating the counter 
     playTone(notes[noteIndex], 0.2, "triangle", 0.035); // Keep the waiting sound soft.
-    noteIndex = (noteIndex + 1) % notes.length; // Repeat the pattern from its first note.
-  }; // End the repeated-note callback.
-
+// Accesses the main index for plaing an triangle vawy sound that last 0.2 ms and has 0.035 amplitude
+    noteIndex = (noteIndex + 1) % notes.length; // Repeat the pattern from its first note.  // explain better 
+  };
   playNextNote(); // Play immediately so the wait is audible.
   waitingSoundTimer = setInterval(playNextNote, 450); // Repeat until the request finishes.
-} // End waiting sound setup.
+} 
+
 
 // Stop the suspense tune when the model finishes or the request is cancelled.
 function stopWaitingSound() { // End the repeating wait sound.
   if (waitingSoundTimer) { // Only clear a timer that was started.
     clearInterval(waitingSoundTimer); // Stop future notes from being scheduled.
     waitingSoundTimer = undefined; // Mark the timer as inactive.
-  } // End the active-timer check.
-} // End waiting sound cleanup.
+  } 
+} 
 
 // Draw the title with a layered CRT glow.
-function drawTitle() { // Position and draw the machine heading.
-  const compact = width < 620 || height < 520; // Detect narrow or short screens.
+function drawTitle() { 
+  const compact = width < 620 || height < 520; // checks the how  narrow or short screens is .
   const titleY = constrain(height * (compact ? 0.19 : 0.16), 76, 130); // Keep the heading in view.
-  const title = "FORTUNE-SLOTS_OS v1.0"; // Set the title text.
+  // compact screensize 19% of the screensize
+  // 16%  of normal screensieze 
+  // height * 0.19 calculates the position that is relative to the screens hieght where text will be drawen
+  // ? ternary operator that cchecks 2 statemnts at the same time 
+  const title = "FORTUNE-SLOTS_OS v1.0"; // TITLE 
+
   let titleSize = constrain(width * 0.075, 19, 64); // Scale the title to the screen.
+// text scale that is defined by 7.5% of the screensize  where min sieze of text is 19 px and bigges 64
+// a more instresting way of making a page more responsive then just using mediaqueries
   textSize(titleSize); // Set the initial size to measure the title.
+
+
   titleSize *= min(1, width * 0.94 / textWidth(title)); // Shrink it if it would exceed the window.
+  // longer version would be titleSize = titleSize * min(1, width * 0.94 / textWidth(title));
+
+/// first part is culculating the  94% width size to fit the text  
+// width * 0.94 / textWidth(title)=  compares the available space with the actual width of your title.
+// *= new way of doing mutiplication since JAn 2025
+// why 1  cuz 1 x Y = Y 
+
   terminalText(title, width / 2, titleY, titleSize); // Draw the glowing title.
+  // width / 2 culculates the horizonatal center of screen
+  // displays the text based on the screens with, title position and font size 
+
+
   fill(0, crtBrightness, 0); // Use the current CRT brightness for the subtitle.
   textSize(constrain(width * 0.027, 10, 22)); // Scale the subtitle separately.
+  // main text size based on screens with that is devided by 2.7% where the min size is 10 and max is 22
+
   text("> DIGITAL SLOT MACHINE ENGINE ONLINE", width / 2, titleY + max(45, titleSize * 1.15)); // Draw it below the title.
-} // End title drawing.
+  // devides the width by 2 and takes the textsize and mutipl 1.15 to find out Spacing based on the title size and prevents the subtitle from getting too close to the main heading.
+} 
 
 // Draw one reel and clip its scrolling words to the frame.
 function drawReel(index, word, layout) { // Draw one frame and its three scrolling words.
   const { size, gap, rowGap, reelY, columns } = layout; // Read the shared reel dimensions.
   const row = Math.floor(index / columns); // Find this reel's row on compact screens.
+// culculates the nearest integer 
+
   const column = index % columns; // Find this reel's column in its row.
-  const reelsInRow = min(columns, REEL_COUNT - row * columns); // Count reels in this row for centering.
-  const x = width / 2 + (column - (reelsInRow - 1) / 2) * gap; // Center this row of reels horizontally.
+  // culculates the remaining 
+
+  const reelsInRow = min(columns, REEL_COUNT - row * columns); // Count reels in this row for centering
+  const x = width / 2 + (column - (reelsInRow - 1) / 2) * gap; // Center this row of reels horizontally and culculatews the amount of gaps bgetween each reel
+  // .
+//2 becasue its splits into 50% inside the devision 
+// 1 because its the distnace in between the fisrt and last reel based on gapx in px
+
+  // 
   const y = reelY + row * rowGap; // Place the reel on its row.
   const rowHeight = max(28, size * 0.34); // Match word spacing to the frame size.
+  // 28 = 28 px 
+  // size * 0.34 = size * 34%
 
   stroke(0, crtBrightness, 0); // Draw the frame in glowing green.
+
   strokeWeight(constrain(size * 0.018, 2, 4)); // Scale the frame border with its size.
+  // size* 1.8%  with min 2 ox and max 4 px 
   fill(0); // Keep the inside of the frame black.
   rect(x, y, size, size, min(20, size * 0.09)); // Draw the rounded reel frame.
 
   const context = drawingContext; // Use the canvas context to clip scrolling words.
   context.save(); // Save the current clipping state.
   context.beginPath(); // Start a clipping rectangle for the reel contents.
-  context.rect(x - size / 2 + 5, y - size / 2 + 5, size - 10, size - 10); // Leave a small border around the words.
+  context.rect(x - size / 2 + 5, y - size / 2 + 5, size - 10, size - 10); // Leave a small border around the words.  // explain deeper 
+
   context.clip(); // Hide any word parts that move outside the frame.
 
   noStroke(); // Remove outlines from the word text.
@@ -363,7 +439,7 @@ function drawStatus() { // Draw the current connection or spin message.
   textSize(constrain(width * 0.04, 12, 30)); // Scale the message to the screen.
   const message = stage === 0 ? connectionMessage : stageMessages[stage]; // Pick the message for this stage.
   text("> " + message, width / 2, height * 0.94, width * 0.92); // Draw it along the bottom.
-} // End status drawing.
+}
 
 // Show the stopped words and the fortune returned by Ollama.
 function drawFortune(layout) { // Draw the final words and model response.
@@ -371,10 +447,11 @@ function drawFortune(layout) { // Draw the final words and model response.
   fill(0, crtBrightness, 0); // Use the CRT green for all result text.
   let y = reelY + (rows - 1) * rowGap + size / 2 + 24; // Start below the last row of reels.
   y = drawParagraph(words.join(" • "), y, width * 0.9, constrain(width * 0.04, 12, 34)) + 12; // List the five selected words.
+
   if (!fortune) { // Show a status message while Ollama is working.
     drawParagraph(aiStatus, y, width * 0.92, constrain(width * 0.03, 16, 22)); // Draw the wait or error message.
     return; // Do not draw empty fortune fields.
-  } // End the waiting and error display branch.
+  } 
 
   y = drawParagraph("Your fortune", y, width * 0.88, constrain(width * 0.025, 12, 20)) + 4; // Label the fortune sentence.
   y = drawParagraph(fortune, y, width * 0.88, constrain(width * 0.031, 11, 30)) + 10; // Draw the model's fortune.
@@ -384,159 +461,234 @@ function drawFortune(layout) { // Draw the final words and model response.
 } // End fortune drawing.
 
 // Wrap a message to fit the available screen width and return its ending position.
-function drawParagraph(message, y, maxWidth, size) { // Wrap and draw a centered message.
-  textSize(size); // Set the font size for this paragraph.
-  textLeading(size * 1.22); // Set the gap between wrapped lines.
-  textAlign(CENTER, TOP); // Align text from the top of its block.
 
-  const lines = []; // Collect wrapped lines before drawing them.
-  for (const paragraph of String(message).split("\n")) { // Preserve explicit paragraph breaks.
-    let line = ""; // Build one line from words.
-    for (const word of paragraph.split(/\s+/)) { // Add words one at a time.
-      const candidate = line ? line + " " + word : word; // Try the next word on the current line.
-      if (line && textWidth(candidate) > maxWidth) { // Check whether the candidate exceeds the width.
-        lines.push(line); // Save the completed line.
-        line = word; // Start the next line with the current word.
-      } else { // Keep the candidate on the current line.
-        line = candidate; // Store the expanded line.
-      } // End the line-wrap decision.
-    } // End the word loop.
-    if (line) lines.push(line); // Save the last line of this paragraph.
-  } // End the paragraph loop.
+function drawParagraph(message, y, maxWidth, size) {
+  // Draws a centered paragraph and automatically moves words to new lines.
+  // message = text, y = starting height, maxWidth = maximum line width, size = font size.
 
-  const lineHeight = size * 1.22; // Match line spacing to the selected font size.
-  lines.forEach((line, index) => { // Draw each wrapped line in order.
-    text(line, width / 2, y + index * lineHeight); // Place it below the previous line.
-  }); // End line drawing.
-  textAlign(CENTER, CENTER); // Restore the alignment used by the rest of the machine.
-  return y + lines.length * lineHeight; // Return the vertical position after the paragraph.
-} // End paragraph drawing.
+  textSize(size); // Sets the font size used when measuring and drawing text.
+  textLeading(size * 1.22); // Sets the vertical spacing between lines to 1.22 times the font size.
+  textAlign(CENTER, TOP); // Centers text horizontally and aligns it from the top.
 
-// Ask the local Ollama model for a short fortune and its plain-language meaning.
-async function generateFortune() { // Ask Ollama to write the fortune and explanation.
-  const controller = new AbortController(); // Make this request cancellable.
-  fortuneController = controller; // Save it so a new spin can cancel it.
-  aiStatus = "FORTUNE ROULETTE: WRITING YOUR FORTUNE..."; // Show that generation has started.
-  startWaitingSound(); // Play the suspense tune while waiting.
+  const lines = []; // Stores each completed line before drawing the paragraph.
+  for (const paragraph of String(message).split("\n")) {
+    // Converts the message to text and separates existing paragraphs at line breaks.
+    let line = ""; // Temporarily stores the words belonging to the current line.
+    for (const word of paragraph.split(/\s+/)) {
+      // Splits the paragraph into individual words using whitespace as the separator.
+      const candidate = line ? line + " " + word : word;
+      // Creates a test line by adding the next word, including a space when needed.
 
-  try { // Send the local chat request and handle its result.
-    const response = await fetch(ollamaUrl, { // Post the prompt to Ollama.
-      method: "POST", // Use a request that sends JSON data.
-      headers: { "Content-Type": "application/json" }, // Tell Ollama the request body is JSON.
-      signal: controller.signal, // Allow the request to be aborted.
-      body: JSON.stringify({ // Convert the model options and prompt to JSON.
-        model, // Use the configured local language model.
-        stream: false, // Wait for one complete response.
-        think: false, // Ask Qwen to skip its separate reasoning output.
-        format: { // Require a predictable JSON response.
-          type: "object", // Return a JSON object.
-          properties: { // Define the fields the object may contain.
-            sentence: { type: "string" }, // Store the fortune sentence as text.
-            explanation: { type: "string" } // Store its explanation as text.
-          }, // Finish the field definitions.
-          required: ["sentence", "explanation"], // Require both response fields.
-          additionalProperties: false // Reject fields that are not requested.
-        }, // Finish the response format.
-        messages: [ // Send the writing instructions and reel words.
-          { // Begin the system instructions.
-            role: "system", // Set the model's overall task.
-            content: "Write a short fortune in clear, everyday English. Use all five symbols in the exact order given. Write one direct sentence of no more than 35 words. Then explain it in a second plain-language sentence of no more than 20 words, with a practical meaning. Avoid jargon and guaranteed predictions. Return JSON with sentence and explanation." // Explain the expected style and format.
-          }, // Finish the system message.
-          { // Begin the user prompt.
-            role: "user", // Supply the words selected by the reels.
-            content: "Use all five words exactly and in this order: " + words.join(", ") + // Include the words in their original order.
-              ". Keep both sentences easy to understand." // Ask the model to keep its answer simple.
-          } // Finish the user message.
-        ], // Finish the prompt messages.
-        options: { temperature: 0.6, num_predict: 120 } // Keep the response focused and short.
-      }) // Finish building the JSON request.
-    }); // Wait for Ollama to reply.
+      if (line && textWidth(candidate) > maxWidth) {
+        // Checks whether adding the word would make the current line too wide.
+        // textWidth() measures the actual width of the text in pixels.
+        lines.push(line); // Saves the completed line in the array.
+        line = word; // Starts a new line with the word that did not fit.
+      } else {
+        line = candidate; // Keeps the new word on the current line if there is space.
+      }
+    }
+    if (line) lines.push(line); // Saves the final line of the current paragraph.
+  }
 
-    if (!response.ok) { // Handle HTTP errors before parsing the response.
-      const errorBody = await response.json().catch(() => ({})); // Read Ollama's error details when available.
-      const details = errorBody.error || "Ollama returned HTTP " + response.status; // Create a useful fallback error.
-      if (response.status === 404) { // Detect a missing model or endpoint.
-        throw new Error("MODEL NOT FOUND • RUN: ollama pull " + model); // Tell the player how to install the model.
-      } // End the missing-model check.
-      throw new Error(details); // Pass other Ollama errors to the error handler.
-    } // End HTTP error handling.
+  const lineHeight = size * 1.22; // Calculates the vertical distance between each line.
+  lines.forEach((line, index) => {
+    // Goes through every stored line; index represents its position in the array.
+    text(line, width / 2, y + index * lineHeight);
+    // Draws each line at the horizontal center of the canvas.
+    // The index calculation moves every following line down by one lineHeight.
+  });
 
-    const result = await response.json(); // Read the response envelope from Ollama.
-    const generated = JSON.parse(result.message.content); // Parse the model's JSON text.
-    if (!generated.sentence || !generated.explanation) { // Check that both expected fields are present.
-      throw new Error("The model did not return both a sentence and an explanation."); // Report incomplete model output.
-    } // End response validation.
+  textAlign(CENTER, CENTER); // Restores the text alignment used by the rest of the application.
+  return y + lines.length * lineHeight;
+  // Returns the vertical position after the paragraph so other content can be placed below it.
+}
 
-    fortune = generated.sentence; // Save the completed fortune.
-    explanation = generated.explanation; // Save its plain-language meaning.
-    aiStatus = "FORTUNE ROULETTE: FORTUNE READY • PRESS TO SPIN AGAIN"; // Tell the player the result is ready.
-    stopWaitingSound(); // End the tune before the success chime.
-    playResultSound(); // Celebrate the completed result.
-  } catch (error) { // Handle request, parsing, and cancellation errors.
-    if (error.name === "AbortError") return; // Ignore an intentional cancellation.
-    console.error("Fortune roulette error:", error); // Keep technical details in the browser console.
-    aiStatus = error instanceof TypeError // Check whether the browser could reach Ollama.
-        ? "OLLAMA CONNECTION FAILED • START OLLAMA" // Show a helpful connection message.
-      : "FORTUNE ROULETTE ERROR: " + error.message; // Show other errors to the player.
-  } finally { // Clean up after success, failure, or cancellation.
-    if (fortuneController === controller) { // Avoid cleaning up a newer request.
-      stopWaitingSound(); // Ensure the repeating sound is stopped.
-      fortuneController = undefined; // Clear the completed request reference.
-    } // End active-request cleanup.
-  } // End request cleanup.
-} // End fortune generation.
 
-// Pair the browser with a micro:bit over its serial connection.
-async function connectSerial() { // Pair a micro:bit with the browser.
-  try { // Request permission and open the serial connection.
-    unlockAudio(); // Enable sound after the user's button click.
-    const port = await navigator.serial.requestPort(); // Ask the browser to select a micro:bit.
-    await port.open({ baudRate: 115200 }); // Open it at the configured communication speed.
-    connectionMessage = "PRESS THE MICROBIT TO BEGIN"; // Update the ready message.
-    connectButton.hide(); // Hide the connect button after pairing.
-    readSerial(port); // Start listening for button presses.
-  } catch (error) { // Handle denied permission or connection failures.
-    console.error("Could not connect to the micro:bit:", error); // Keep details available for debugging.
-    connectionMessage = "MICROBIT CONNECTION FAILED"; // Show a simple failure message.
-  } // End connection error handling.
-} // End serial connection.
+// Requests a fortune and its explanation from the local Ollama AI model.
+async function generateFortune() {
+  // async allows this function to wait for the AI without freezing the browser.
+  const controller = new AbortController(); // Creates a controller that can cancel the HTTP request.
+  fortuneController = controller; // Stores the controller so another spin can cancel this request.
+  aiStatus = "FORTUNE ROULETTE: WRITING YOUR FORTUNE..."; // Updates the interface while the AI generates text.
+  startWaitingSound(); // Plays the suspense sound while waiting for the response.
 
-// Turn newline-delimited PRESS messages from the micro:bit into spins.
-async function readSerial(port) { // Read button presses from the micro:bit.
-  try { // Decode incoming bytes as text.
-    const decoder = new TextDecoderStream(); // Convert serial bytes into text.
-    port.readable.pipeTo(decoder.writable); // Feed the serial stream into the decoder.
-    const reader = decoder.readable.getReader(); // Create a reader for decoded messages.
+  try {
+    // Starts error handling for the request and response processing.
+    const response = await fetch(ollamaUrl, {
+      // Sends a request to the local Ollama API and waits for its response.
+      method: "POST", // Uses POST because the application sends data to the server.
+      headers: { "Content-Type": "application/json" }, // Tells Ollama that the request contains JSON data.
+      signal: controller.signal, // Connects the request to the cancellation controller.
+      body: JSON.stringify({
+        // Converts the following JavaScript object into JSON text for Ollama.
+        model, // Selects the local AI model configured elsewhere in the application.
+        stream: false, // Requests the complete response at once instead of receiving it in pieces.
+        think: false, // Asks supported Qwen models to disable separate reasoning output.
+        format: {
+          // Defines the expected structure of the AI's response.
+          type: "object", // Requires the response to be a JSON object.
+          properties: {
+            sentence: { type: "string" }, // Defines the fortune as a text property.
+            explanation: { type: "string" } // Defines the explanation as a separate text property.
+          },
+          required: ["sentence", "explanation"], // Makes sure both properties must be included.
+          additionalProperties: false // Prevents additional, unrequested properties.
+        },
+        messages: [
+          // Sends the AI its instructions and the words selected by the roulette.
+          {
+            role: "system", // Defines the general instructions and writing rules for the AI.
+            content: "Write a short fortune in clear, everyday English. Use all five symbols in the exact order given. Write one direct sentence of no more than 35 words. Then explain it in a second plain-language sentence of no more than 20 words, with a practical meaning. Avoid jargon and guaranteed predictions. Return JSON with sentence and explanation."
+            // Specifies the writing style, word limits, symbol order and required JSON format.
+          },
+          {
+            role: "user", // Supplies the specific words from the current roulette spin.
+            content: "Use all five words exactly and in this order: " + words.join(", ") +
+              ". Keep both sentences easy to understand."
+            // join(", ") combines the words array into one comma-separated string.
+            // The AI receives the actual words selected by the reels in their original order.
+          }
+        ],
+        options: { temperature: 0.6, num_predict: 120 }
+        // temperature controls creativity, while num_predict limits the generated tokens.
+      })
+    });
 
-    while (true) { // Keep reading until the serial stream closes.
-      const { value, done } = await reader.read(); // Wait for the next text chunk.
-      if (done) break; // Stop when the device closes the stream.
-      serialBuffer += value; // Save new text until complete lines are available.
+    if (!response.ok) {
+      // Checks whether the HTTP request succeeded (status code 200–299).
+      const errorBody = await response.json().catch(() => ({}));
+      // Attempts to read Ollama's error message; returns an empty object if parsing fails.
+      const details = errorBody.error || "Ollama returned HTTP " + response.status;
+      // Uses Ollama's error description or creates a fallback message with the HTTP status.
 
-      const lines = serialBuffer.split("\n"); // Separate complete messages by line breaks.
-      serialBuffer = lines.pop(); // Keep the last possibly incomplete message.
-      for (const line of lines) { // Process each completed message.
-        if (line.trim() === "PRESS") advanceMachine(); // Advance the reels when the micro:bit is pressed.
-      } // End message processing.
-    } // End serial reading.
-  } catch (error) { // Handle an unexpected serial read failure.
-    console.error("Serial read error:", error); // Keep the failure details in the console.
-    connectionMessage = "MICROBIT CONNECTION LOST"; // Tell the player the device disconnected.
-  } // End serial error handling.
-} // End micro:bit reader.
+      if (response.status === 404) {
+        // Checks whether the requested model or API endpoint could not be found.
+        throw new Error("MODEL NOT FOUND • RUN: ollama pull " + model);
+        // Stops execution and creates an error explaining how to download the model.
+      }
+      throw new Error(details); // Passes other HTTP errors to the catch block.
+    }
 
-// Draw layered green text to create a CRT glow.
-function terminalText(message, x, y, size) { // Draw glowing green CRT text.
-  textSize(size); // Apply the requested font size.
-  fill(0, 60, 0); // Set the darkest glow layer.
-  text(message, x + 4, y + 4); // Draw the outer shadow slightly offset.
-  fill(0, 120, 0); // Brighten the middle glow layer.
-  text(message, x + 2, y + 2); // Draw the middle layer closer to the text.
-  fill(0, crtBrightness, 0); // Set the main text brightness.
-  text(message, x, y); // Draw the sharp text on top.
-} // End CRT text drawing.
+    const result = await response.json();
+    // Converts Ollama's response from JSON text into a JavaScript object.
+    const generated = JSON.parse(result.message.content);
+    // Extracts the AI's generated text and converts its JSON string into an object.
 
-// Keep the canvas matched to the window after resizing.
-function windowResized() { // Recalculate the canvas after a window resize.
-  resizeCanvas(windowWidth, max(windowHeight, 720)); // Keep the canvas wide and tall enough for the interface.
-} // End resize handling.
+    if (!generated.sentence || !generated.explanation) {
+      // Checks that both required properties exist and contain values.
+      throw new Error("The model did not return both a sentence and an explanation.");
+      // Throws an error if the AI response is incomplete.
+    }
+
+    fortune = generated.sentence; // Stores the generated fortune for display.
+    explanation = generated.explanation; // Stores its explanation separately.
+    aiStatus = "FORTUNE ROULETTE: FORTUNE READY • PRESS TO SPIN AGAIN"; // Updates the interface when generation finishes.
+    stopWaitingSound(); // Stops the suspense sound.
+    playResultSound(); // Plays the sound indicating that the fortune is ready.
+
+  } catch (error) {
+    // Handles errors from the request, response parsing or cancellation.
+    if (error.name === "AbortError") return; // Ignores requests intentionally cancelled by the application.
+    console.error("Fortune roulette error:", error); // Prints technical error information for debugging.
+
+    aiStatus = error instanceof TypeError
+        ? "OLLAMA CONNECTION FAILED • START OLLAMA"
+        : "FORTUNE ROULETTE ERROR: " + error.message;
+    // Uses a ternary condition to display different messages depending on the error.
+    // TypeError indicates a likely connection problem; other errors show their message.
+
+  } finally {
+    // Executes cleanup regardless of whether the request succeeded or failed.
+    if (fortuneController === controller) {
+      // Makes sure this is still the active request before clearing its controller.
+      stopWaitingSound(); // Ensures the waiting sound is no longer playing.
+      fortuneController = undefined; // Clears the reference to the completed request.
+    }
+  }
+}
+
+
+// Connects the browser to a physical micro:bit using the Web Serial API.
+async function connectSerial() {
+  // async allows the browser to wait for device selection and connection.
+  try {
+    unlockAudio(); // Enables audio after the user's interaction with the connect button.
+    const port = await navigator.serial.requestPort();
+    // Opens the browser's device selection window and stores the selected serial port.
+    await port.open({ baudRate: 115200 });
+    // Opens communication with the micro:bit at 115200 bits per second.
+
+    connectionMessage = "PRESS THE MICROBIT TO BEGIN"; // Displays the connection-ready message.
+    connectButton.hide(); // Hides the connection button after successful pairing.
+    readSerial(port); // Starts listening for incoming messages from the micro:bit.
+
+  } catch (error) {
+    // Handles problems such as denied permission or an unsuccessful connection.
+    console.error("Could not connect to the micro:bit:", error); // Prints the technical error for debugging.
+    connectionMessage = "MICROBIT CONNECTION FAILED"; // Displays a connection failure message.
+  }
+}
+
+
+// Reads messages from the micro:bit and starts a spin when it sends PRESS.
+async function readSerial(port) {
+  try {
+    const decoder = new TextDecoderStream();
+    // Creates a decoder that converts incoming serial bytes into readable text.
+    port.readable.pipeTo(decoder.writable);
+    // Connects the micro:bit's incoming data stream to the text decoder.
+    const reader = decoder.readable.getReader();
+    // Creates a reader that lets the program receive decoded messages.
+
+    while (true) {
+      // Continuously listens for incoming data until the connection closes.
+      const { value, done } = await reader.read();
+      // Waits for new data and extracts its value and completion status.
+      // value contains received text; done indicates whether the stream has ended.
+
+      if (done) break; // Exits the loop when the serial stream closes.
+      serialBuffer += value; // Adds incoming text to the buffer in case a message is incomplete.
+
+      const lines = serialBuffer.split("\n");
+      // Separates complete messages wherever a newline character appears.
+      serialBuffer = lines.pop();
+      // Keeps the final potentially incomplete message for the next data update.
+
+      for (const line of lines) {
+        // Processes each complete message received from the micro:bit.
+        if (line.trim() === "PRESS") advanceMachine();
+        // Removes surrounding whitespace and checks whether the message is PRESS.
+        // If it matches, advanceMachine() starts the roulette action.
+      }
+    }
+
+  } catch (error) {
+    // Handles errors caused by interrupted or failed serial communication.
+    console.error("Serial read error:", error); // Prints the error in the browser console.
+    connectionMessage = "MICROBIT CONNECTION LOST"; // Informs the player that communication was interrupted.
+  }
+}
+
+
+// Draws green text in multiple layers to simulate an old CRT monitor glow.
+function terminalText(message, x, y, size) {
+  textSize(size); // Sets the font size for all three text layers.
+
+  fill(0, 60, 0); // Selects a dark green RGB colour for the outer glow.
+  text(message, x + 4, y + 4); // Draws the first layer slightly below and to the right.
+
+  fill(0, 120, 0); // Changes to a brighter green for the middle glow.
+  text(message, x + 2, y + 2); // Draws the second layer closer to the original position.
+
+  fill(0, crtBrightness, 0); // Uses the crtBrightness variable to control the main text colour.
+  text(message, x, y); // Draws the sharp final layer at the original position.
+}
+
+
+// Automatically adjusts the canvas when the browser window changes size.
+function windowResized() {
+  resizeCanvas(windowWidth, max(windowHeight, 720));
+  // Sets the canvas width to the browser width and its height to the larger
+  // of the browser height or 720 pixels, keeping enough space for the interface.
+}
