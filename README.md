@@ -41,11 +41,3 @@ If the model is not installed, run `ollama pull qwen3:1.7b`. If the app reports
 an Ollama connection error, make sure the Ollama app or `ollama serve` is
 running, then spin again. Opening the page directly as `file://` is not
 supported.
-
-## Ideas for future features
-
-- Add themed prompt modes, such as cyberpunk, horror, or absurdist poetry.
-- Save and replay a history of spins and their fortunes.
-- Turn fortunes into animated CRT text or generative visuals.
-- Add a difficulty or creativity setting that adjusts local model parameters.
-- Support more reel categories, custom word packs, and multiple local models.
